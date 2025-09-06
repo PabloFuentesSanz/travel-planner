@@ -111,7 +111,7 @@ const Dashboard = () => {
               Crear Viaje
             </Button>
           </div>
-{/*
+          {/*
     <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgb(var(--gray-200))] hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-[rgb(var(--coral))]/10 rounded-lg">
@@ -129,7 +129,6 @@ const Dashboard = () => {
             </Button>
           </div>
 */}
-      
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgb(var(--gray-200))] hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
@@ -152,17 +151,24 @@ const Dashboard = () => {
         {/* Trips Grid or Empty State */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <p className="text-red-800 text-sm">Error al cargar los viajes: {error}</p>
+            <p className="text-red-800 text-sm">
+              Error al cargar los viajes: {error}
+            </p>
           </div>
         )}
-        
+
         {loading ? (
           <div className="bg-white rounded-xl p-8 shadow-sm border border-[rgb(var(--gray-200))]">
             <div className="text-center">
               <div className="w-16 h-16 bg-[rgb(var(--coral))]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin size={32} className="text-[rgb(var(--coral))] animate-pulse" />
+                <MapPin
+                  size={32}
+                  className="text-[rgb(var(--coral))] animate-pulse"
+                />
               </div>
-              <p className="text-[rgb(var(--gray-300))]">Cargando tus viajes...</p>
+              <p className="text-[rgb(var(--gray-300))]">
+                Cargando tus viajes...
+              </p>
             </div>
           </div>
         ) : trips.length === 0 ? (
@@ -175,8 +181,8 @@ const Dashboard = () => {
                 ¡Tu primera aventura te espera!
               </h3>
               <p className="text-[rgb(var(--gray-300))] mb-6 max-w-md mx-auto">
-                Crea tu primer viaje y comienza a descubrir todas las herramientas
-                que tenemos para hacer tu experiencia inolvidable.
+                Crea tu primer viaje y comienza a descubrir todas las
+                herramientas que tenemos para hacer tu experiencia inolvidable.
               </p>
               <Button
                 variant="primary"

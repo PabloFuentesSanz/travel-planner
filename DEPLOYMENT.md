@@ -1,5 +1,12 @@
 # Configuración de Deployment
 
+## ✅ Pasos completados:
+
+1. **Archivo `vercel.json`** creado para manejar rutas SPA
+2. **Variables de entorno** configuradas
+3. **Archivo `_redirects`** creado como respaldo
+4. **URLs de redirección** actualizadas en el código
+
 ## Variables de Entorno en Vercel
 
 Ve a tu proyecto en Vercel Dashboard > Settings > Environment Variables y añade:
@@ -21,7 +28,12 @@ Ve a tu Dashboard de Supabase > Authentication > URL Configuration:
 
 ## Pasos para Deployment
 
-1. Configurar variables de entorno en Vercel
-2. Configurar URLs en Supabase
-3. Hacer redeploy de la aplicación en Vercel
-4. Probar el login en producción
+1. ✅ Configurar variables de entorno en Vercel
+2. ✅ Configurar URLs en Supabase
+3. ✅ Crear `vercel.json` para manejo de rutas SPA
+4. 🔄 Hacer redeploy de la aplicación en Vercel
+5. 🔄 Probar el login en producción
+
+## Problema del Error 404
+
+El error 404 en `/dashboard` se debe a que Vercel no sabía cómo manejar las rutas de cliente de React Router. El archivo `vercel.json` que creamos soluciona esto redirigiendo todas las rutas a `index.html` para que React Router las maneje.
