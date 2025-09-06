@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/auth/Login';
 import Dashboard from './components/dashboard/Dashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import TripDetailsPage from './components/trips/TripDetailsPage';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -29,6 +30,14 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/trip/:tripId" 
+        element={
+          <ProtectedRoute>
+            <TripDetailsPage />
           </ProtectedRoute>
         } 
       />

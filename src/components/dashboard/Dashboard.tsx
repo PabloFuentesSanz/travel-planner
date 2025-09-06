@@ -1,9 +1,14 @@
-import { LogOut, MapPin, Plus, Settings, User } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, MapPin, Plus, Settings } from 'lucide-react';
 import { Button } from '../ui';
 import { useAuth } from '../../contexts/AuthContext';
+import CreateTripModal from '../trips/CreateTripModal';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [isCreateTripModalOpen, setIsCreateTripModalOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -11,6 +16,10 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error signing out:', error);
     }
+  };
+
+  const handleTripCreated = (tripId: string) => {
+    navigate(`/trip/${tripId}`);
   };
 
   return (
@@ -22,7 +31,9 @@ const Dashboard = () => {
             {/* Logo */}
             <div className="flex items-center gap-3">
               <MapPin size={32} className="text-[rgb(var(--coral))]" />
-              <h1 className="text-2xl font-bold text-[rgb(var(--black))]">TravelPro</h1>
+              <h1 className="text-2xl font-bold text-[rgb(var(--black))]">
+                TravelPro
+              </h1>
             </div>
 
             {/* User Menu */}
@@ -37,16 +48,16 @@ const Dashboard = () => {
                   </p>
                 </div>
                 {user?.user_metadata?.avatar_url && (
-                  <img 
-                    src={user.user_metadata.avatar_url} 
-                    alt="Avatar" 
+                  <img
+                    src={user.user_metadata.avatar_url}
+                    alt="Avatar"
                     className="w-8 h-8 rounded-full"
                   />
                 )}
               </div>
-              
-              <Button 
-                variant="ghost" 
+
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
                 className="text-[rgb(var(--gray-300))] hover:text-[rgb(var(--coral))]"
@@ -64,7 +75,8 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-[rgb(var(--black))] mb-2">
-            ¡Hola, {user?.user_metadata?.full_name?.split(' ')[0] || 'Viajero'}! 👋
+            ¡Hola, {user?.user_metadata?.full_name?.split(' ')[0] || 'Viajero'}!
+            👋
           </h2>
           <p className="text-[rgb(var(--gray-300))] text-lg">
             ¿Listo para planificar tu próxima aventura?
@@ -85,7 +97,12 @@ const Dashboard = () => {
             <p className="text-[rgb(var(--gray-300))] text-sm mb-4">
               Comienza a planificar tu próxima aventura
             </p>
-            <Button variant="primary" size="sm" className="w-full">
+            <Button
+              variant="primary"
+              size="sm"
+              className="w-full"
+              onClick={() => setIsCreateTripModalOpen(true)}
+            >
               Crear Viaje
             </Button>
           </div>
@@ -135,16 +152,27 @@ const Dashboard = () => {
               ¡Tu primera aventura te espera!
             </h3>
             <p className="text-[rgb(var(--gray-300))] mb-6 max-w-md mx-auto">
-              Crea tu primer viaje y comienza a descubrir todas las herramientas 
+              Crea tu primer viaje y comienza a descubrir todas las herramientas
               que tenemos para hacer tu experiencia inolvidable.
             </p>
-            <Button variant="primary" size="lg">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => setIsCreateTripModalOpen(true)}
+            >
               <Plus size={20} />
               Crear mi primer viaje
             </Button>
           </div>
         </div>
       </main>
+
+      {/* Create Trip Modal */}
+      <CreateTripModal
+        isOpen={isCreateTripModalOpen}
+        onClose={() => setIsCreateTripModalOpen(false)}
+        onTripCreated={handleTripCreated}
+      />
     </div>
   );
 };

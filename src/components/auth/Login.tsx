@@ -16,13 +16,14 @@ const Login = () => {
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
-        }
+        },
       });
 
       if (error) {
         throw error;
       }
-    } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error('Error during Google authentication:', error);
       setError(error.message || 'Error al iniciar sesión con Google');
     } finally {
@@ -35,20 +36,20 @@ const Login = () => {
       {/* Left Panel - Branding */}
       <div className="bg-[rgb(var(--coral))] lg:w-1/2 flex flex-col justify-center items-center p-8 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--coral))] to-[rgb(var(--coral-dark))] opacity-90" />
-        
+
         <div className="relative z-10 text-center max-w-md">
           <div className="flex items-center justify-center gap-3 mb-6">
             <MapPin size={48} className="text-white" />
             <h1 className="text-4xl font-bold">TravelPro</h1>
           </div>
-          
+
           <h2 className="text-2xl font-semibold mb-4">
             Tu gestor de viajes perfecto
           </h2>
-          
+
           <p className="text-lg opacity-90 leading-relaxed">
-            Planifica, organiza y vive tus aventuras como nunca antes. 
-            Una experiencia completamente personalizable y intuitiva.
+            Planifica, organiza y vive tus aventuras como nunca antes. Una
+            experiencia completamente personalizable y intuitiva.
           </p>
         </div>
 
@@ -89,7 +90,8 @@ const Login = () => {
 
             <div className="text-center">
               <p className="text-sm text-[rgb(var(--gray-300))]">
-                Al continuar, aceptas nuestros términos de servicio y política de privacidad
+                Al continuar, aceptas nuestros términos de servicio y política
+                de privacidad
               </p>
             </div>
           </div>
