@@ -111,8 +111,8 @@ const Dashboard = () => {
               Crear Viaje
             </Button>
           </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgb(var(--gray-200))] hover:shadow-md transition-shadow">
+{/*
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgb(var(--gray-200))] hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-[rgb(var(--coral))]/10 rounded-lg">
                 <MapPin size={24} className="text-[rgb(var(--coral))]" />
@@ -128,6 +128,8 @@ const Dashboard = () => {
               Ver Viajes
             </Button>
           </div>
+*/}
+      
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgb(var(--gray-200))] hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">

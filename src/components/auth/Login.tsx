@@ -12,10 +12,13 @@ const Login = () => {
       setLoading(true);
       setError(null);
 
+      // Usar variable de entorno o detectar automáticamente
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${appUrl}/dashboard`,
         },
       });
 
