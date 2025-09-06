@@ -31,7 +31,8 @@ export const config = {
       : (import.meta.env.VITE_APP_URL || 'https://ryokoplanner.vercel.app'),
     isDevelopment: environment === 'development',
     isProduction: environment === 'production',
-    environment
+    environment,
+    name: import.meta.env.VITE_APP_NAME || 'Ryoko Planner'
   }
 };
 
