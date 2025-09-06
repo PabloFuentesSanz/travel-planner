@@ -4,11 +4,14 @@ import { LogOut, MapPin, Plus, Settings } from 'lucide-react';
 import { Button } from '../ui';
 import { useAuth } from '../../contexts/AuthContext';
 import CreateTripModal from '../trips/CreateTripModal';
+import TripsGrid from '../trips/TripsGrid';
+import { useTrips } from '../../hooks/useTrips';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isCreateTripModalOpen, setIsCreateTripModalOpen] = useState(false);
+  const { trips, loading, error, refreshTrips } = useTrips();
 
   const handleSignOut = async () => {
     try {
@@ -19,6 +22,8 @@ const Dashboard = () => {
   };
 
   const handleTripCreated = (tripId: string) => {
+    setIsCreateTripModalOpen(false);
+    refreshTrips(); // Reload trips to show the new one
     navigate(`/trip/${tripId}`);
   };
 
@@ -142,29 +147,55 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Recent Activity / Empty State */}
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-[rgb(var(--gray-200))]">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-[rgb(var(--coral))]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MapPin size={32} className="text-[rgb(var(--coral))]" />
-            </div>
-            <h3 className="text-xl font-semibold text-[rgb(var(--black))] mb-2">
-              ¡Tu primera aventura te espera!
-            </h3>
-            <p className="text-[rgb(var(--gray-300))] mb-6 max-w-md mx-auto">
-              Crea tu primer viaje y comienza a descubrir todas las herramientas
-              que tenemos para hacer tu experiencia inolvidable.
-            </p>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => setIsCreateTripModalOpen(true)}
-            >
-              <Plus size={20} />
-              Crear mi primer viaje
-            </Button>
+        {/* Trips Grid or Empty State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+            <p className="text-red-800 text-sm">Error al cargar los viajes: {error}</p>
           </div>
-        </div>
+        )}
+        
+        {loading ? (
+          <div className="bg-white rounded-xl p-8 shadow-sm border border-[rgb(var(--gray-200))]">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[rgb(var(--coral))]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin size={32} className="text-[rgb(var(--coral))] animate-pulse" />
+              </div>
+              <p className="text-[rgb(var(--gray-300))]">Cargando tus viajes...</p>
+            </div>
+          </div>
+        ) : trips.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 shadow-sm border border-[rgb(var(--gray-200))]">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[rgb(var(--coral))]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin size={32} className="text-[rgb(var(--coral))]" />
+              </div>
+              <h3 className="text-xl font-semibold text-[rgb(var(--black))] mb-2">
+                ¡Tu primera aventura te espera!
+              </h3>
+              <p className="text-[rgb(var(--gray-300))] mb-6 max-w-md mx-auto">
+                Crea tu primer viaje y comienza a descubrir todas las herramientas
+                que tenemos para hacer tu experiencia inolvidable.
+              </p>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => setIsCreateTripModalOpen(true)}
+              >
+                <Plus size={20} />
+                Crear mi primer viaje
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold text-[rgb(var(--black))]">
+                Mis Viajes ({trips.length})
+              </h3>
+            </div>
+            <TripsGrid trips={trips} loading={loading} />
+          </div>
+        )}
       </main>
 
       {/* Create Trip Modal */}
