@@ -17,6 +17,8 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 VITE_APP_URL=https://ryokoplanner.vercel.app
 ```
 
+**Nota**: La aplicación detecta automáticamente si está en desarrollo (localhost:3000) o producción (usando VITE_APP_URL).
+
 ## Configuración en Supabase
 
 Ve a tu Dashboard de Supabase > Authentication > URL Configuration:

@@ -156,6 +156,91 @@ export class TripService {
     }
   }
 
+  static async updateTripCoverImage(
+    tripId: string,
+    file: File
+  ): Promise<{ imageUrl?: string; error?: string }> {
+    try {
+      console.log('🔄 Starting image upload for trip:', tripId);
+      console.log('📁 File info:', { name: file.name, size: file.size, type: file.type });
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Usuario no autenticado');
+      }
+
+      console.log('👤 User authenticated:', user.id);
+
+      // Check if bucket exists, create if not
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(bucket => bucket.name === 'images');
+      
+      if (!bucketExists) {
+        console.log('🪣 Creating images bucket...');
+        const { error: bucketError } = await supabase.storage.createBucket('images', {
+          public: true
+        });
+        if (bucketError) {
+          console.error('❌ Error creating bucket:', bucketError);
+        } else {
+          console.log('✅ Bucket created successfully');
+        }
+      }
+
+      // Generate a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `trip-covers/${tripId}/${Date.now()}.${fileExt}`;
+      console.log('📝 Generated fileName:', fileName);
+
+      // Upload image to Supabase Storage
+      console.log('⬆️ Starting upload to Supabase Storage...');
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('❌ Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('✅ Upload successful:', uploadData);
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('images')
+        .getPublicUrl(fileName);
+
+      const imageUrl = urlData.publicUrl;
+      console.log('🔗 Generated public URL:', imageUrl);
+
+      // Update trip with new cover image URL
+      console.log('💾 Updating trip in database...');
+      const { error: updateError, data: updateData } = await supabase
+        .from('trips')
+        .update({ cover_image_url: imageUrl })
+        .eq('id', tripId)
+        .eq('user_id', user.id)
+        .select();
+
+      if (updateError) {
+        console.error('❌ Database update error:', updateError);
+        throw updateError;
+      }
+
+      console.log('✅ Database updated successfully:', updateData);
+
+      return { imageUrl };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error('❌ Error updating trip cover image:', error);
+      return {
+        error: error.message || 'Error al actualizar la imagen',
+      };
+    }
+  }
+
   private static async inviteCollaboratorByEmail(
     tripId: string,
     email: string

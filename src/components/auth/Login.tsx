@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MapPin, Chrome } from 'lucide-react';
 import { Button } from '../ui';
 import { supabase } from '../../lib/supabase';
+import { getRedirectUrl } from '../../lib/config';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -12,13 +13,14 @@ const Login = () => {
       setLoading(true);
       setError(null);
 
-      // Usar variable de entorno o detectar automáticamente
-      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
-      
+      // Debug: mostrar qué URL se está usando
+      const redirectUrl = getRedirectUrl('/dashboard');
+      console.log('🚀 Attempting login with redirect URL:', redirectUrl);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${appUrl}/dashboard`,
+          redirectTo: redirectUrl,
         },
       });
 
@@ -43,7 +45,7 @@ const Login = () => {
         <div className="relative z-10 text-center max-w-md">
           <div className="flex items-center justify-center gap-3 mb-6">
             <MapPin size={48} className="text-white" />
-            <h1 className="text-4xl font-bold">TravelPro</h1>
+            <h1 className="text-4xl font-bold">Ryoko</h1>
           </div>
 
           <h2 className="text-2xl font-semibold mb-4">

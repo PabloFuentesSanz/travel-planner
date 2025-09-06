@@ -37,7 +37,7 @@ const Dashboard = () => {
             <div className="flex items-center gap-3">
               <MapPin size={32} className="text-[rgb(var(--coral))]" />
               <h1 className="text-2xl font-bold text-[rgb(var(--black))]">
-                TravelPro
+                Ryoko
               </h1>
             </div>
 
