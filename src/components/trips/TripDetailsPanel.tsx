@@ -2,6 +2,7 @@ import { Calendar, Users, Euro, MapPin, Settings } from 'lucide-react';
 import { Button, ImageUploadButton } from '../ui';
 import { TripService } from '../../services/tripService';
 import { useImageUpload } from '../../hooks';
+import { TripItinerary } from '../itinerary';
 import type { Trip } from '../../types/database';
 
 interface TripDetailsPanelProps {
@@ -230,19 +231,8 @@ const TripDetailsPanel = ({ trip, onTripUpdate }: TripDetailsPanelProps) => {
           </div>
         </div>
 
-        {/* Itinerario placeholder */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgb(var(--gray-200))]">
-          <h3 className="font-semibold text-[rgb(var(--black))] mb-4">Itinerario</h3>
-          
-          <div className="text-center py-8">
-            <div className="w-12 h-12 bg-[rgb(var(--coral))]/10 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Calendar size={24} className="text-[rgb(var(--coral))]" />
-            </div>
-            <p className="text-[rgb(var(--gray-300))] text-sm">
-              Aquí aparecerá tu itinerario detallado
-            </p>
-          </div>
-        </div>
+        {/* Itinerario */}
+        <TripItinerary trip={trip} />
 
         {/* Gastos placeholder */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgb(var(--gray-200))]">
