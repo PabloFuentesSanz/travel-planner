@@ -1,55 +1,111 @@
 import { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Navigation, RefreshCw } from 'lucide-react';
-import L from 'leaflet';
+import { Loader } from '@googlemaps/js-api-loader';
 import {
   GeocodingService,
   type Coordinates,
 } from '../../services/geocodingService';
 import type { Trip } from '../../types/database';
-import 'leaflet/dist/leaflet.css';
 
 interface MapViewProps {
   trip: Trip;
 }
 
-// Fix Leaflet default markers
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl:
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl:
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+// Initialize Google Maps loader
+const loader = new Loader({
+  apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+  version: 'weekly',
+  libraries: ['places'],
 });
 
-// Custom marker icon
-const createCustomIcon = (color: string) => {
-  return L.divIcon({
-    className: 'custom-marker',
-    html: `
-      <div class="w-8 h-8 bg-[${color}] rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-      </div>
-    `,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32],
-  });
-};
-
 const MapView = ({ trip }: MapViewProps) => {
-  const mapRef = useRef<L.Map | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const googleMapRef = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
   const [coordinates, setCoordinates] = useState<Coordinates>(() =>
     GeocodingService.getDefaultCoordinates(trip.destination)
   );
   const [loading, setLoading] = useState(false);
   const [geocodedPlace, setGeocodedPlace] = useState<string>('');
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  // Initialize Google Maps
+  useEffect(() => {
+    const initMap = async () => {
+      try {
+        await loader.load();
+        
+        if (mapRef.current) {
+          const map = new google.maps.Map(mapRef.current, {
+            center: { lat: coordinates.latitude, lng: coordinates.longitude },
+            zoom: 10,
+            styles: [
+              {
+                featureType: 'poi',
+                elementType: 'labels',
+                stylers: [{ visibility: 'on' }],
+              },
+            ],
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+          });
+
+          googleMapRef.current = map;
+
+          // Add marker
+          const marker = new google.maps.Marker({
+            position: { lat: coordinates.latitude, lng: coordinates.longitude },
+            map: map,
+            title: trip.destination || 'Destino',
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: '#FF6B6B',
+              fillOpacity: 1,
+              strokeColor: '#FFFFFF',
+              strokeWeight: 2,
+              scale: 12,
+            },
+          });
+
+          markerRef.current = marker;
+
+          // Add info window
+          const infoWindow = new google.maps.InfoWindow({
+            content: `
+              <div style="color: #333; font-family: system-ui;">
+                <p style="margin: 0; font-weight: 500;">${trip.destination || 'Destino'}</p>
+                <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">${trip.title}</p>
+                ${geocodedPlace && geocodedPlace !== trip.destination ? 
+                  `<p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">📍 ${geocodedPlace}</p>` : 
+                  ''
+                }
+              </div>
+            `,
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+          });
+
+          setMapLoaded(true);
+        }
+      } catch (error) {
+        console.error('Error loading Google Maps:', error);
+      }
+    };
+
+    initMap();
+  }, []);
+
+  // Update marker position when coordinates change
+  useEffect(() => {
+    if (googleMapRef.current && markerRef.current) {
+      const newPosition = { lat: coordinates.latitude, lng: coordinates.longitude };
+      markerRef.current.setPosition(newPosition);
+      googleMapRef.current.panTo(newPosition);
+    }
+  }, [coordinates]);
 
   // Geocode destination on mount or when destination changes
   useEffect(() => {
@@ -65,70 +121,41 @@ const MapView = ({ trip }: MapViewProps) => {
         setCoordinates(result.coordinates);
         setGeocodedPlace(result.placeName);
 
-        // Fly to new coordinates if map is loaded
-        if (mapRef.current) {
-          mapRef.current.flyTo(
-            [result.coordinates.latitude, result.coordinates.longitude],
-            12,
-            {
-              duration: 2,
-            }
-          );
+        // Animate to new coordinates if map is loaded
+        if (googleMapRef.current) {
+          googleMapRef.current.panTo({
+            lat: result.coordinates.latitude,
+            lng: result.coordinates.longitude,
+          });
+          googleMapRef.current.setZoom(12);
         }
       }
       setLoading(false);
     };
 
-    geocodeDestination();
-  }, [trip.destination]);
+    if (mapLoaded) {
+      geocodeDestination();
+    }
+  }, [trip.destination, mapLoaded]);
 
   const handleRecenterMap = () => {
-    if (mapRef.current) {
-      mapRef.current.flyTo([coordinates.latitude, coordinates.longitude], 12, {
-        duration: 1,
+    if (googleMapRef.current) {
+      googleMapRef.current.panTo({
+        lat: coordinates.latitude,
+        lng: coordinates.longitude,
       });
+      googleMapRef.current.setZoom(12);
     }
   };
 
   return (
     <div className="w-full h-full relative border-l border-[rgb(var(--gray-200))]">
-      {/* Map Container */}
-      <MapContainer
-        center={[coordinates.latitude, coordinates.longitude]}
-        zoom={10}
-        style={{ height: '100%', width: '100%' }}
+      {/* Google Map Container */}
+      <div
         ref={mapRef}
-        zoomControl={true}
-        scrollWheelZoom={true}
-      >
-        {/* OpenStreetMap Tile Layer */}
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        {/* Destination Marker */}
-        <Marker
-          position={[coordinates.latitude, coordinates.longitude]}
-          icon={createCustomIcon('rgb(var(--coral))')}
-        >
-          <Popup>
-            <div className="text-center">
-              <p className="font-medium text-[rgb(var(--black))]">
-                {trip.destination || 'Destino'}
-              </p>
-              <p className="text-xs text-[rgb(var(--gray-300))] mt-1">
-                {trip.title}
-              </p>
-              {geocodedPlace && geocodedPlace !== trip.destination && (
-                <p className="text-xs text-[rgb(var(--gray-300))] mt-1">
-                  📍 {geocodedPlace}
-                </p>
-              )}
-            </div>
-          </Popup>
-        </Marker>
-      </MapContainer>
+        className="w-full h-full"
+        style={{ minHeight: '400px' }}
+      />
 
       {/* Custom Controls */}
       <div className="absolute top-4 right-3 space-y-2 z-[1000]">
@@ -177,7 +204,7 @@ const MapView = ({ trip }: MapViewProps) => {
 
       {/* Map Attribution */}
       <div className="absolute bottom-2 right-2 bg-white/90 rounded px-2 py-1 text-xs text-[rgb(var(--gray-300))] z-[1000]">
-        Powered by OpenStreetMap
+        Powered by Google Maps
       </div>
     </div>
   );

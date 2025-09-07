@@ -15,8 +15,60 @@ export interface GeocodingResult {
 export class GeocodingService {
   static async geocodeDestination(destination: string): Promise<GeocodingResult | null> {
     try {
+      // Try Google Maps Geocoding API first if available
+      if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+        return new Promise((resolve) => {
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode(
+            { address: destination },
+            (results, status) => {
+              if (status === 'OK' && results && results[0]) {
+                const result = results[0];
+                const location = result.geometry.location;
+                const latitude = location.lat();
+                const longitude = location.lng();
+                
+                // Extract place information
+                const placeName = result.formatted_address;
+                let country = '';
+                let region = '';
+                
+                result.address_components.forEach(component => {
+                  if (component.types.includes('country')) {
+                    country = component.long_name;
+                  }
+                  if (component.types.includes('administrative_area_level_1')) {
+                    region = component.long_name;
+                  }
+                });
+                
+                resolve({
+                  coordinates: { latitude, longitude },
+                  placeName,
+                  country,
+                  region,
+                });
+              } else {
+                console.warn('Google Geocoding failed, falling back to Nominatim');
+                resolve(this.fallbackGeocode(destination));
+              }
+            }
+          );
+        });
+      }
+      
+      // Fallback to Nominatim if Google Maps is not available
+      return await this.fallbackGeocode(destination);
+    } catch (error) {
+      console.error('❌ Geocoding error:', error);
+      return await this.fallbackGeocode(destination);
+    }
+  }
+  
+  private static async fallbackGeocode(destination: string): Promise<GeocodingResult | null> {
+    try {
       const encodedDestination = encodeURIComponent(destination);
-      // Using Nominatim API (OpenStreetMap) - completely free!
+      // Using Nominatim API (OpenStreetMap) as fallback
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedDestination}&limit=1&addressdetails=1`;
 
       const response = await fetch(url, {
@@ -52,7 +104,7 @@ export class GeocodingService {
 
       return null;
     } catch (error) {
-      console.error('❌ Geocoding error:', error);
+      console.error('❌ Fallback geocoding error:', error);
       return null;
     }
   }
