@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { MapPin, Navigation, RefreshCw, Maximize2 } from 'lucide-react';
+import { Navigation, RefreshCw } from 'lucide-react';
 import L from 'leaflet';
-import { GeocodingService, type Coordinates } from '../../services/geocodingService';
+import {
+  GeocodingService,
+  type Coordinates,
+} from '../../services/geocodingService';
 import type { Trip } from '../../types/database';
 import 'leaflet/dist/leaflet.css';
 
@@ -11,11 +14,15 @@ interface MapViewProps {
 }
 
 // Fix Leaflet default markers
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconRetinaUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
 // Custom marker icon
@@ -38,7 +45,7 @@ const createCustomIcon = (color: string) => {
 
 const MapView = ({ trip }: MapViewProps) => {
   const mapRef = useRef<L.Map | null>(null);
-  const [coordinates, setCoordinates] = useState<Coordinates>(() => 
+  const [coordinates, setCoordinates] = useState<Coordinates>(() =>
     GeocodingService.getDefaultCoordinates(trip.destination)
   );
   const [loading, setLoading] = useState(false);
@@ -50,17 +57,23 @@ const MapView = ({ trip }: MapViewProps) => {
       if (!trip.destination) return;
 
       setLoading(true);
-      const result = await GeocodingService.geocodeDestination(trip.destination);
-      
+      const result = await GeocodingService.geocodeDestination(
+        trip.destination
+      );
+
       if (result) {
         setCoordinates(result.coordinates);
         setGeocodedPlace(result.placeName);
-        
+
         // Fly to new coordinates if map is loaded
         if (mapRef.current) {
-          mapRef.current.flyTo([result.coordinates.latitude, result.coordinates.longitude], 12, {
-            duration: 2
-          });
+          mapRef.current.flyTo(
+            [result.coordinates.latitude, result.coordinates.longitude],
+            12,
+            {
+              duration: 2,
+            }
+          );
         }
       }
       setLoading(false);
@@ -72,7 +85,7 @@ const MapView = ({ trip }: MapViewProps) => {
   const handleRecenterMap = () => {
     if (mapRef.current) {
       mapRef.current.flyTo([coordinates.latitude, coordinates.longitude], 12, {
-        duration: 1
+        duration: 1,
       });
     }
   };
@@ -126,7 +139,10 @@ const MapView = ({ trip }: MapViewProps) => {
           title="Recentrar mapa"
         >
           {loading ? (
-            <RefreshCw size={20} className="text-[rgb(var(--coral))] animate-spin" />
+            <RefreshCw
+              size={20}
+              className="text-[rgb(var(--coral))] animate-spin"
+            />
           ) : (
             <Navigation size={20} className="text-[rgb(var(--coral))]" />
           )}
@@ -142,7 +158,6 @@ const MapView = ({ trip }: MapViewProps) => {
               <p className="text-sm font-medium text-[rgb(var(--black))] truncate">
                 {trip.destination}
               </p>
-
             </div>
           </div>
         </div>
@@ -152,7 +167,10 @@ const MapView = ({ trip }: MapViewProps) => {
       {loading && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[1000]">
           <div className="bg-white rounded-lg p-3 shadow-lg border border-[rgb(var(--gray-200))]">
-            <RefreshCw size={20} className="text-[rgb(var(--coral))] animate-spin" />
+            <RefreshCw
+              size={20}
+              className="text-[rgb(var(--coral))] animate-spin"
+            />
           </div>
         </div>
       )}

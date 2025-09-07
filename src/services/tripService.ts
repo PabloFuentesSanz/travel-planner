@@ -162,7 +162,11 @@ export class TripService {
   ): Promise<{ imageUrl?: string; error?: string }> {
     try {
       console.log('🔄 Starting image upload for trip:', tripId);
-      console.log('📁 File info:', { name: file.name, size: file.size, type: file.type });
+      console.log('📁 File info:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
 
       const {
         data: { user },
@@ -175,13 +179,16 @@ export class TripService {
 
       // Check if bucket exists, create if not
       const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(bucket => bucket.name === 'images');
-      
+      const bucketExists = buckets?.some((bucket) => bucket.name === 'images');
+
       if (!bucketExists) {
         console.log('🪣 Creating images bucket...');
-        const { error: bucketError } = await supabase.storage.createBucket('images', {
-          public: true
-        });
+        const { error: bucketError } = await supabase.storage.createBucket(
+          'images',
+          {
+            public: true,
+          }
+        );
         if (bucketError) {
           console.error('❌ Error creating bucket:', bucketError);
         } else {
@@ -219,7 +226,7 @@ export class TripService {
       console.log('💾 Updating trip in database...');
       const { error: updateError, data: updateData } = await supabase
         .from('trips')
-        .update({ cover_image_url: imageUrl })
+        .update({ cover_image_url: imageUrl } as never)
         .eq('id', tripId)
         .eq('user_id', user.id)
         .select();
